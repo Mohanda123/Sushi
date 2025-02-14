@@ -156,6 +156,19 @@ function takeCommand(message) {
             appendMessage("Sushi", "Please specify a topic you want to search for on Wikipedia.");
         }
     } 
+
+    else if (message.includes('search google for') || message.includes('why') || message.includes('how')) {
+        const query = message.replace('search google for', '').trim();
+        if (query) {
+            appendMessage("Sushi", `Searching Google for "${query}"...`);
+            searchGoogle(query);
+        } else {
+            speak("Please specify what you want to search for.");
+            appendMessage("Sushi", "Please specify what you want to search for.");
+        }
+    }
+    
+    
     else {
         const response = "I'm not sure about that. Can you ask something else?";
         speak(response);
@@ -215,3 +228,31 @@ function evaluateExpression(expression) {
         return "Invalid expression";
     }
 }
+async function searchGoogle(query) {
+    const apiKey = "AIzaSyArOJTL-AzZn0DccnNpCu2YTNX_KRUyC4s"; // Replace with your API key
+    const cx = "052ccd7cfb6dc4fa1"; // Replace with your Search Engine ID
+    const searchUrl = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(query)}&key=${apiKey}&cx=${cx}`;
+
+    try {
+        const response = await fetch(searchUrl);
+        const data = await response.json();
+
+        if (data.items && data.items.length > 0) {
+            const firstResult = data.items[0]; 
+            const title = firstResult.title;
+            const snippet = firstResult.snippet;
+            const link = firstResult.link;
+
+            const resultMessage = `${title}\n${snippet}\nRead more: ${link}`;
+            speak(resultMessage);
+            appendMessage("Sushi", resultMessage);
+        } else {
+            speak("No results found.");
+            appendMessage("Sushi", "No results found.");
+        }
+    } catch (error) {
+        speak("Sorry, I couldn't fetch the search results.");
+        appendMessage("Sushi", "Sorry, I couldn't fetch the search results.");
+    }
+}
+
